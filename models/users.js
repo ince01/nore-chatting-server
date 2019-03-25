@@ -1,14 +1,39 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 var userSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    genre: String,
-    password: String,
+  email: {
+    type: String,
+    //unique: true,
+    required: true,
+    trim: true
+  },
+  username: {
+    type: String,
+    //unique: true,
+    required: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true,
+  }
 }, {
-    timestamps: true
+  timestamps: true
 });
 
-var User = mongoose.model('User', userSchema);
+// userSchema.pre('save', (next) => {
+//   const user = this;
+//   console.log(user.password)
+//   bcrypt.hashSync(user.password, 10, (err, hash) => {
+//     if (err) {
+//       return next(err);
+//     }
+//     user.password = hash;
+//     next();
+//   })
+// });
 
-module.exports = User;
+var Users = mongoose.model('Users', userSchema);
+
+module.exports = Users;
