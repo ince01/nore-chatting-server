@@ -6,6 +6,8 @@ module.exports = (app) => {
     useNewUrlParser: true,
   }
   mongoose.connect(dbUri, options, (error) => {
-    console.log(`Can't connect database! (Message: ${error.message}`)
+    if (error) {
+      console.log(`Can't connect database! (Message: ${error.message}`);
+    }
   });
 }
