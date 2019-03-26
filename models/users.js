@@ -4,13 +4,12 @@ import bcrypt from 'bcrypt';
 var userSchema = new mongoose.Schema({
   email: {
     type: String,
-    //unique: true,
+    unique: true,
     required: true,
     trim: true
   },
-  username: {
+  fullname: {
     type: String,
-    //unique: true,
     required: true,
     trim: true
   },

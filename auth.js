@@ -1,19 +1,42 @@
 const passport = require('passport');
-const LocalStrategy = require('passport-local');
+import bcrypt from 'bcrypt';
+const LocalStrategy = require('passport-local').Strategy;
 
-import Users from '../models/users';
+import Users from './models/users';
+
+Users.findOne({email:'alt.f4.to@gmail.com'},(err, data)=>{
+  if (err){
+    console.log(err)
+  }
+  console.log(data)
+})
 
 passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.findOne({ username: username }, function (err, user) {
-      if (err) { return done(err); }
+
+  (email, password, done) => {
+    Users.findOne({ email: email }, (err, user) => {
+      const pass = bcrypt.compareSync(password, user.password);
+      if (err) {
+        return done(err);
+      }
       if (!user) {
         return done(null, false, { message: 'Incorrect username.' });
       }
-      if (!user.validPassword(password)) {
+      if (!pass) {
         return done(null, false, { message: 'Incorrect password.' });
       }
       return done(null, user);
     });
   }
 ));
+
+passport.serializeUser(function (user, cb) {
+  cb(null, user);
+});
+
+// passport.deserializeUser(function (id, cb) {
+//   Users.findById(id, function (err, user) {
+//     if (err) { return cb(err); }
+//     cb(null, user);
+//   });
+// });

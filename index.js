@@ -1,11 +1,14 @@
 import express from 'express';
 import http from 'http';
+import passport from 'passport';
+
 import socketIo from 'socket.io';
 
 import db from './db';
 import router from './routes';
 
 import middlewares from './middlewares';
+
 
 const app = express();
 
@@ -18,14 +21,24 @@ const port = process.env.PORT || 5000;
 //Connect database
 db(app);
 
+require('./auth');
+
 //Middleware
 middlewares(app);
 
-//Home page
 app.get('/', (req, res) => {
   res.send('Hello world !');
 })
 
+app.route('/login')
+  .post(
+    passport.authenticate('local', { successRedirect: '/' }),
+
+    (req, res) => {
+      res.json({"s":"sss"})
+    },
+
+  );
 
 //Routes
 app.use(router);
