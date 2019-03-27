@@ -29,6 +29,20 @@ exports.createUser = async (req, res) => {
   })
 }
 
-// exports.login = passport.authenticate('local');
+exports.auth = (req, res, next) => {
+  passport.authenticate('local', function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.redirect('/');
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
+      return res.send(user);
+    });
 
-
+  })(req, res, next);
+}

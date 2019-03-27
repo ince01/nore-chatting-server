@@ -8,7 +8,7 @@ import db from './db';
 import router from './routes';
 
 import middlewares from './middlewares';
-
+import passportConfig from './auth';
 
 const app = express();
 
@@ -21,24 +21,15 @@ const port = process.env.PORT || 5000;
 //Connect database
 db(app);
 
-require('./auth');
-
 //Middleware
 middlewares(app);
+
+//Config passport
+passportConfig(passport)
 
 app.get('/', (req, res) => {
   res.send('Hello world !');
 })
-
-app.route('/login')
-  .post(
-    passport.authenticate('local', { successRedirect: '/' }),
-
-    (req, res) => {
-      res.json({"s":"sss"})
-    },
-
-  );
 
 //Routes
 app.use(router);
