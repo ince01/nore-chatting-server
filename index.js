@@ -28,7 +28,7 @@ middlewares(app);
 passportConfig(passport)
 
 app.get('/', (req, res) => {
-  res.send('Hello world !');
+  res.send('Coming soon ...');
 })
 
 //Routes
