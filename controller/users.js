@@ -46,3 +46,12 @@ exports.auth = (req, res, next) => {
 
   })(req, res, next);
 }
+
+exports.getUsers = (req, res) => {
+  Users.find({}, (err, user) => {
+    if (err) {
+      console.log(err);
+    }
+    res.json(user)
+  });
+}

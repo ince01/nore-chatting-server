@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 
-import { createUser, auth } from '../controller/users';
+import { createUser, auth, getUsers } from '../controller/users';
 
 router.route('/user/create')
     .post(createUser)
@@ -9,6 +9,9 @@ router.route('/user/create')
 router.route('/login')
     .get()
     .post(auth)
+
+router.route('/user')
+    .get(getUsers)
 
 module.exports = router;
 
