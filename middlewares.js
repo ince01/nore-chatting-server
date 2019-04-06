@@ -3,7 +3,6 @@ import session from 'express-session';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import morgan from 'morgan';
-var flash = require('connect-flash')();
 
 const MongoStore = require('connect-mongo')(session);
 
@@ -12,11 +11,11 @@ module.exports = (app) => {
     extended: false
   }))
   app.use(bodyParser.json())
-  app.use(morgan())
+  app.use(morgan('dev'))
   //session
   app.use(session({
     secret: 'secret-key',
-    resave: true,
+    resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 60000
@@ -27,5 +26,4 @@ module.exports = (app) => {
   }));
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(flash)
 }

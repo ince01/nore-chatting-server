@@ -1,33 +1,35 @@
 import bcrypt from 'bcrypt';
-const LocalStrategy = require('passport-local').Strategy;
+import { Strategy, ExtractJwt } from 'passport-jwt';
 
 import Users from './models/users';
 
 module.exports = (passport) => {
-  passport.use(new LocalStrategy(
-    (email, password, done) => {
 
-      Users.findOne({
-        email: email
-      }, (err, user) => {
-        const pass = bcrypt.compareSync(password, user.password);
-        if (err) {
-          return done(err);
-        }
-        if (!user) {
-          return done(null, false, {
-            message: 'Incorrect username.'
-          });
-        }
-        if (!pass) {
-          return done(null, false, {
-            message: 'Incorrect password.'
-          });
-        }
+  const params = {
+    secretOrKey: 'secret-key',
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt')
+  };
+
+  // console.log(params.jwtFromRequest)
+
+  passport.use(new Strategy(params, (payload, done) => {
+    console.log(payload.id)
+    Users.findOne({ _id: payload.id }, (err, user) => {
+      console.log('hi em ')
+      if (err) {
+        console.log(err);
+        console.log(user)
+        return done(err, false);
+      }
+      if (user) {
+        console.log(user);
         return done(null, user);
-      });
-    }
-  ));
+      } else {
+        console.log('FAIL')
+        return done(null, false)
+      }
+    })
+  }));
 
   passport.serializeUser(function (user, cb) {
     cb(null, user);
@@ -43,3 +45,36 @@ module.exports = (passport) => {
   });
 
 }
+
+
+// import passport from "passport";
+// import { Strategy, ExtractJwt } from "passport-jwt";
+// import Users from './models/users';
+
+
+// module.exports = (app) => {
+//   const params = {
+//     secretOrKey: 'secret-key',
+//     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt")
+//   };
+//   const strategy = new Strategy(params, (payload, done) => {
+//     console.log(payload.id)
+//     Users.findById(payload.id)
+//       .then(user => {
+//         if (user) {
+//           return done(null, user);
+//         }
+//         return done(null, false);
+//       })
+//       .catch(error => done(error, null));
+//   });
+//   passport.use(strategy);
+//   return {
+//     initialize: () => {
+//       return passport.initialize();
+//     },
+//     authenticate: () => {
+//       return passport.authenticate("jwt", { session: true });
+//     }
+//   };
+// };

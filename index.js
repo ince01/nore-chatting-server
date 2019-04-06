@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 
 //Routes
 app.use(router);
-
+// setTimeout(() => { console.log(passport) }, 500);
 //SocketIO
 io.on('connection', function (socket) {
   console.log(`a user connected with id: ${socket.id}`);
