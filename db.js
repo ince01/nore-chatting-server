@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
+import { MONGODB_URI } from './config';
 
 module.exports = () => {
-  const dbUri = 'mongodb://admin:F7WU2t8dSktzqen@ds121026.mlab.com:21026/nore-chatting-app';
   const options = {
     useNewUrlParser: true,
   }
-  mongoose.connect(dbUri, options, (error) => {
+  mongoose.connect(MONGODB_URI, options, (error) => {
     if (error) {
       console.log(`Can't connect database! (Message: ${error.message}`);
     }

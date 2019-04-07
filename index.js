@@ -1,12 +1,10 @@
 import express from 'express';
 import http from 'http';
 import passport from 'passport';
-
+import { PORT } from './config'
 import socketIo from 'socket.io';
-
 import db from './db';
 import router from './routes';
-
 import middlewares from './middlewares';
 import passportConfig from './auth';
 
@@ -16,23 +14,20 @@ const server = http.Server(app);
 
 const io = socketIo(server);
 
-const port = process.env.PORT || 5000;
-
 //Connect database
 db(app);
 
-//Middleware
+//Use middleware
 middlewares(app);
 
 //Config passport
 passportConfig(passport)
 
+//Routes
+app.use(router);
 app.get('/', (req, res) => {
   res.send('Hello world !');
 })
-
-//Routes
-app.use(router);
 
 //SocketIO
 io.on('connection', function (socket) {
@@ -57,6 +52,13 @@ io.on('connection', function (socket) {
   });
 })
 
-server.listen(port, () => {
-  console.log(`nore-server running on port ${port} ...`);
+//Run server
+server.listen(PORT, () => {
+  console.log(`nore-server running on port ${server.address().port} ...`);
 })
+
+// Handling unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise);
+  console.error('Reason:', reason);
+});

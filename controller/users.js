@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import Users from '../models/users';
 
@@ -29,22 +28,32 @@ exports.createUser = async (req, res) => {
   })
 }
 
-exports.auth = (req, res, next) => {
-  passport.authenticate('local', function (err, user, info) {
+exports.login = (req, res) => {
+  var email = req.body.email;
+  var password = req.body.password;
+  Users.findOne({ email }, (err, user) => {
     if (err) {
-      return next(err);
+      throw err
     }
-    if (!user) {
-      return res.redirect('/');
+    if (user) {
+      bcrypt.compare(password, user.password,
+        (err, isMatch) => {
+          if (err) {
+            console.log(err);
+          }
+          if (isMatch) {
+            var token = jwt.sign({ id: user._id }, 'secret-key');
+            res.json({
+              success: true,
+              token: token,
+              data: user
+            })
+          } else {
+            res.json({ success: false })
+          }
+        });
     }
-    req.logIn(user, function (err) {
-      if (err) {
-        return next(err);
-      }
-      return res.send(user);
-    });
-
-  })(req, res, next);
+  })
 }
 
 exports.getUsers = (req, res) => {

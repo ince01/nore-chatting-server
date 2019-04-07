@@ -18,8 +18,8 @@ var userSchema = new mongoose.Schema({
     required: true,
   }
 }, {
-  timestamps: true
-});
+    timestamps: true
+  });
 
 // userSchema.pre('save', (next) => {
 //   const user = this;
