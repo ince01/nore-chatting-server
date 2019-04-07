@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 
 import Users from './models/users';
@@ -10,19 +9,13 @@ module.exports = (passport) => {
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt')
   };
 
-  // console.log(params.jwtFromRequest)
-
   passport.use(new Strategy(params, (payload, done) => {
-    console.log(payload.id)
     Users.findOne({ _id: payload.id }, (err, user) => {
-      console.log('hi em ')
       if (err) {
         console.log(err);
-        console.log(user)
         return done(err, false);
       }
       if (user) {
-        console.log(user);
         return done(null, user);
       } else {
         console.log('FAIL')
@@ -31,12 +24,12 @@ module.exports = (passport) => {
     })
   }));
 
-  passport.serializeUser(function (user, cb) {
-    cb(null, user);
+  passport.serializeUser((user, cb) => {
+    cb(null, user.id);
   });
 
-  passport.deserializeUser(function (id, cb) {
-    Users.findById(id, function (err, user) {
+  passport.deserializeUser((id, cb) => {
+    Users.findById(id, (err, user) => {
       if (err) {
         return cb(err);
       }
@@ -45,36 +38,3 @@ module.exports = (passport) => {
   });
 
 }
-
-
-// import passport from "passport";
-// import { Strategy, ExtractJwt } from "passport-jwt";
-// import Users from './models/users';
-
-
-// module.exports = (app) => {
-//   const params = {
-//     secretOrKey: 'secret-key',
-//     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt")
-//   };
-//   const strategy = new Strategy(params, (payload, done) => {
-//     console.log(payload.id)
-//     Users.findById(payload.id)
-//       .then(user => {
-//         if (user) {
-//           return done(null, user);
-//         }
-//         return done(null, false);
-//       })
-//       .catch(error => done(error, null));
-//   });
-//   passport.use(strategy);
-//   return {
-//     initialize: () => {
-//       return passport.initialize();
-//     },
-//     authenticate: () => {
-//       return passport.authenticate("jwt", { session: true });
-//     }
-//   };
-// };

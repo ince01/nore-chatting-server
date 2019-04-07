@@ -42,9 +42,7 @@ exports.login = (req, res) => {
             console.log(err);
           }
           if (isMatch) {
-            console.log(user)
             var token = jwt.sign({ id: user._id }, 'secret-key');
-            console.log({ token: token });
             res.json({
               success: true,
               token: token,
