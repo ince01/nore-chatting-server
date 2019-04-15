@@ -33,13 +33,14 @@ module.exports = (app) => {
     resave: false,
     saveUninitialized: false,
     cookie: {
+      domain: 'xxx.com',
       maxAge: 60000
     },
     store: new MongoStore({
       mongooseConnection: mongoose.connection
     })
   }));
-  
+
   app.use(passport.initialize());
   app.use(passport.session());
 }

@@ -36,24 +36,33 @@ exports.login = (req, res) => {
       throw err
     }
     if (user) {
-      bcrypt.compare(password, user.password,
-        (err, isMatch) => {
-          if (err) {
-            console.log(err);
-          }
-          if (isMatch) {
-            var token = jwt.sign({ id: user._id }, 'secret-key');
-            res.json({
-              success: true,
-              token: token,
-              data: user
-            })
-          } else {
-            res.json({ success: false })
-          }
-        });
+      bcrypt.compare(password, user.password).then((isMatch) => {
+        if (isMatch) {
+          var token = jwt.sign({ id: user._id }, 'secret-key-jwt');
+          return res.json({
+            success: true,
+            result: {
+              data: user,
+              sessionToken: token,
+            },
+            message: "Login success !"
+          })
+        } else {
+          return res.json({
+            success: false,
+            result: false,
+            message: "Invail email or password !"
+          })
+        }
+      }).catch((err) => {
+        throw err
+      })
     }
   })
+}
+
+exports.logout = (req, res) => {
+
 }
 
 exports.getUsers = (req, res) => {
@@ -62,5 +71,6 @@ exports.getUsers = (req, res) => {
       console.log(err);
     }
     res.json(user)
+    console.log(req.session)
   });
 }
