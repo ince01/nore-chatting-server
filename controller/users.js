@@ -40,7 +40,7 @@ exports.login = (req, res) => {
         if (isMatch) {
           var token = jwt.sign({ id: user._id }, 'secret-key-jwt');
           return res.json({
-            success: true,
+            status: true,
             result: {
               data: user,
               sessionToken: token,
@@ -49,7 +49,7 @@ exports.login = (req, res) => {
           })
         } else {
           return res.json({
-            success: false,
+            status: false,
             result: false,
             message: "Invail email or password !"
           })
@@ -71,6 +71,5 @@ exports.getUsers = (req, res) => {
       console.log(err);
     }
     res.json(user)
-    console.log(req.session)
   });
 }

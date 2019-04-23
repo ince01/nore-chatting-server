@@ -29,11 +29,13 @@ module.exports = (app) => {
 
   //session
   app.use(session({
-    secret: 'secret-key',
+    secret: 'secret-key-session',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      domain: 'xxx.com',
+      path: "/",
+      httpOnly: true,
+      secure: true,
       maxAge: 60000
     },
     store: new MongoStore({

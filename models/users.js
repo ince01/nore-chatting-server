@@ -8,7 +8,12 @@ var userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  fullname: {
+  fullName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  gender: {
     type: String,
     required: true,
     trim: true

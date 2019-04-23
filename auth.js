@@ -1,11 +1,12 @@
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import { JWT_SECRET } from './config';
 
 import Users from './models/users';
 
 module.exports = (passport) => {
 
   const params = {
-    secretOrKey: 'secret-key-jwt',
+    secretOrKey: JWT_SECRET,
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt')
   };
 

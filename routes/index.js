@@ -4,7 +4,7 @@ const router = express.Router();
 
 import { createUser, login, logout, getUsers } from '../controller/users';
 
-router.route('/user/create')
+router.route('/register')
     .post(createUser)
 
 router.route('/login')
