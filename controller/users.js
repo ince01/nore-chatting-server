@@ -9,7 +9,7 @@ exports.createUser = async (req, res) => {
     password: bcrypt.hashSync(req.body.password, 10) // Hash password
   }
 
-  await Users.create(reqBody, async (err, data) => {
+  await Users.create(reqBody, (err, data) => {
     let responseData = {};
     responseData = {
       status: 'T',

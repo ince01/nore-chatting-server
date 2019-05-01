@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import { Schema, model } from 'mongoose';
+// import bcrypt from 'bcrypt';
 
-var userSchema = new mongoose.Schema({
+var userSchema = new Schema({
   email: {
     type: String,
     unique: true,
@@ -38,6 +38,6 @@ var userSchema = new mongoose.Schema({
 //   })
 // });
 
-var Users = mongoose.model('Users', userSchema);
+var Users = model('Users', userSchema);
 
 module.exports = Users;
