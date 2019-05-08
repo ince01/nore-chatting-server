@@ -6,23 +6,15 @@ var messageSchema = new Schema({
     ref: 'Users',
     required: true,
   },
-  idUserChatting: {
+  idFriend: {
     type: SchemaTypes.ObjectId,
     ref: 'Users',
-    required: true,
-  },
-  type: {
-    type: String,
-    required: true,
-  },
-  content: {
-    type: String,
     required: true,
   }
 }, {
     timestamps: true,
   });
 
-var Messages = model('Messages', messageSchema);
+var Friends = model('Friends', messageSchema);
 
-module.exports = Messages;
+module.exports = Friends;

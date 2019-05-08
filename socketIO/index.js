@@ -21,22 +21,33 @@ module.exports = (server) => {
 
   io.sockets.on('connection', (socket) => {
 
+    console.log(socket.id)
+
     socket.on('message', (message) => {
+
+      console.log(message)
 
       Messages.create(message, (err, data) => {
         if (err) {
           console.log(err);
           return new Error('Something went wrong!');
         };
-        console.log(data);
       });
 
-      socket.to(message.to).broadcast.emit('new-message', message);
+      socket.join(`Room-${message.to}`);
+
+      console.log(socket.rooms)
+
+      // console.log(io)
+
+      io.to(`Room-${message.to}`).emit("newMessage", message.content)
+      // socket.on("newMessage", (data) => { console.log(data) })
 
     })
 
+
     socket.on('disconnect', (reason) => {
-      console.log(`${socket.id} disconnected: ${reason}`);
+      // console.log(`${socket.id} disconnected: ${reason}`);
     })
 
   })

@@ -21,6 +21,11 @@ var userSchema = new Schema({
   password: {
     type: String,
     required: true,
+  },
+  isOnline: {
+    type: Boolean,
+    default: false,
+    required: true,
   }
 }, {
     timestamps: true
