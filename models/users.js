@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, SchemaTypes } from 'mongoose';
 // import bcrypt from 'bcrypt';
 
 var userSchema = new Schema({
@@ -20,6 +20,17 @@ var userSchema = new Schema({
   },
   password: {
     type: String,
+    required: true,
+  },
+  friends: [
+    {
+      type: SchemaTypes.ObjectId,
+      ref: 'User'
+    }
+  ],
+  emailVerified: {
+    type: Boolean,
+    default: false,
     required: true,
   },
   isOnline: {

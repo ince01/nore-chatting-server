@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Users, Friends } from '../models';
+import { sendMailToVerify } from '../utils/mailer';
+import { JWT_SECRET } from '../config';
 
 exports.createUser = async (req, res) => {
 
@@ -11,11 +13,18 @@ exports.createUser = async (req, res) => {
 
   await Users.create(reqBody, (err, data) => {
     let responseData = {};
-    responseData = {
-      status: 'T',
-      result: data,
-      message: 'Create user success !'
-    };
+
+    if (data) {
+      var token = jwt.sign({ id: data._id }, JWT_SECRET);
+      sendMailToVerify(token, data.email, data.fullName);
+
+      responseData = {
+        status: 'T',
+        result: data,
+        message: 'Create user success !'
+      };
+    }
+
     if (err) {
       responseData = {
         status: 'F',
@@ -28,6 +37,48 @@ exports.createUser = async (req, res) => {
   })
 }
 
+exports.verifyEmail = (req, res) => {
+  const token = req.params.token;
+  const email = req.query.email;
+  console.log(email)
+
+  if (token && email) {
+
+    Users.findOne({ email }, (err, user) => {
+      if (err) {
+        return res.send(err.message);
+      }
+
+      if (user && user.emailVerified) {
+        return res.send('Email Already Verified');
+      }
+
+      if (user && !user.emailVerified) {
+        jwt.verify(token, JWT_SECRET, (err, decoded) => {
+          if (err) {
+            return res.send(err.message);
+          }
+
+          Users.findByIdAndUpdate(decoded.id, { emailVerified: true }, (err) => {
+            if (err) {
+              return res.send(err.message);
+            };
+            return res.send('Email is verified');
+          });
+
+        });
+      }
+
+      if (!user) {
+        return res.send('Invail email!');
+      }
+    });
+  } else {
+    res.send('something went wrong!');
+  }
+
+}
+
 exports.login = (req, res) => {
   var email = req.body.email;
   var password = req.body.password;
@@ -38,7 +89,7 @@ exports.login = (req, res) => {
     if (user) {
       bcrypt.compare(password, user.password).then((isMatch) => {
         if (isMatch) {
-          var token = jwt.sign({ id: user._id }, 'secret-key-jwt');
+          var token = jwt.sign({ id: user._id }, JWT_SECRET);
           return res.json({
             sucess: true,
             result: {

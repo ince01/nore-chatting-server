@@ -2,10 +2,13 @@ import express from 'express';
 import passport from 'passport';
 const router = express.Router();
 
-import { createUser, login, getUsers, getFriends, addFriend } from '../controller/users';
+import { createUser, login, getUsers, getFriends, addFriend, verifyEmail } from '../controller/users';
 
 router.route('/register')
     .post(createUser)
+
+router.route('/verify/:token/verify-email')
+    .get(verifyEmail)
 
 router.route('/login')
     .post(login)
