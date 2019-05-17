@@ -25,9 +25,13 @@ var userSchema = new Schema({
   friends: [
     {
       type: SchemaTypes.ObjectId,
-      ref: 'User'
+      ref: 'Users',
     }
   ],
+  avatar: {
+    type: SchemaTypes.ObjectId,
+    ref: 'Images',
+  },
   emailVerified: {
     type: Boolean,
     default: false,

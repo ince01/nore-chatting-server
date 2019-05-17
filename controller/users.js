@@ -4,7 +4,7 @@ import { Users, Friends } from '../models';
 import { sendMailToVerify } from '../utils/mailer';
 import { JWT_SECRET } from '../config';
 
-exports.createUser = async (req, res) => {
+exports.register = async (req, res) => {
 
   let reqBody = {
     ...req.body,
@@ -40,7 +40,6 @@ exports.createUser = async (req, res) => {
 exports.verifyEmail = (req, res) => {
   const token = req.params.token;
   const email = req.query.email;
-  console.log(email)
 
   if (token && email) {
 
@@ -82,46 +81,58 @@ exports.verifyEmail = (req, res) => {
 exports.login = (req, res) => {
   var email = req.body.email;
   var password = req.body.password;
-  Users.findOne({ email }, (err, user) => {
-    if (err) {
-      throw err
-    }
-    if (user) {
-      bcrypt.compare(password, user.password).then((isMatch) => {
-        if (isMatch) {
-          var token = jwt.sign({ id: user._id }, JWT_SECRET);
-          return res.json({
-            sucess: true,
-            result: {
-              data: user,
-              sessionToken: token,
-            },
-            message: "Login success !"
-          })
-        } else {
-          return res.status(400).send({
-            message: 'Invail email or password'
-          });
-        }
-      }).catch((err) => {
+
+  try {
+    Users.findOne({ email }, (err, user) => {
+      if (err) {
         throw err
-      })
-    } else {
-      return res.status(400).send({
-        message: 'Invail email or password'
-      });
-    }
-  })
+      }
+      if (user) {
+        bcrypt.compare(password, user.password).then((isMatch) => {
+          if (isMatch) {
+            var token = jwt.sign({ id: user._id }, JWT_SECRET);
+
+            return res.status(200).json({
+              sucess: true,
+              result: user,
+              sessionToken: token,
+              message: "Login success !"
+            })
+          } else {
+            return res.status(400).send({
+              message: 'Invail email or password'
+            });
+          }
+        }).catch((err) => {
+          throw err
+        })
+      } else {
+        return res.status(400).send({
+          message: 'Invail email or password'
+        });
+      }
+    })
+  }
+  catch (err) {
+    throw err
+  }
 }
 
 
-exports.getUsers = (req, res) => {
-  Users.find({}, (err, user) => {
-    if (err) {
-      console.log(err);
+exports.getCurrentUserByToken = (req, res) => {
+  const currentUser = req.user;
+
+  let responseData = {};
+  try {
+    responseData = {
+      status: true,
+      result: currentUser,
+      message: 'Get current user success.',
     }
-    res.json(user)
-  });
+    res.status(200).json(responseData)
+  } catch (err) {
+    throw err
+  }
 }
 
 exports.getFriends = (req, res) => {
@@ -130,20 +141,24 @@ exports.getFriends = (req, res) => {
     .populate('idFriend')
     .exec((err, friend) => {
       let responseData = {};
-      responseData = {
-        status: 'T',
-        result: friend,
-        // message: 'Add friend success !'
-      };
+
       if (err) {
         responseData = {
-          status: 'F',
+          status: false,
           code: err,
           result: [],
           message: err.message
         };
+        return res.status(400).json(responseData);
       }
-      res.json(responseData);
+      if (friend) {
+        responseData = {
+          status: true,
+          result: friend,
+          message: 'Get friends success.'
+        };
+        return res.status(200).json(responseData);
+      }
     });
 }
 

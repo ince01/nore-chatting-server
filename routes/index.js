@@ -2,10 +2,10 @@ import express from 'express';
 import passport from 'passport';
 const router = express.Router();
 
-import { createUser, login, getUsers, getFriends, addFriend, verifyEmail } from '../controller/users';
+import { register, login, getCurrentUserByToken, getFriends, addFriend, verifyEmail } from '../controller/users';
 
 router.route('/register')
-    .post(createUser)
+    .post(register)
 
 router.route('/verify/:token/verify-email')
     .get(verifyEmail)
@@ -13,13 +13,13 @@ router.route('/verify/:token/verify-email')
 router.route('/login')
     .post(login)
 
-router.route('/user')
+router.route('/user/getCurrentUserByToken')
     .all(passport.authenticate('jwt'))
-    .get(getUsers)
+    .post(getCurrentUserByToken)
 
 router.route('/user/friends')
     .all(passport.authenticate('jwt'))
-    .get(getFriends)
+    .post(getFriends)
 
 router.route('/user/add-friend')
     .all(passport.authenticate('jwt'))
