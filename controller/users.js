@@ -1,30 +1,28 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Users, Friends } from '../models';
+import { Users, Friends, FriendRelationships } from '../models';
 import { sendMailToVerify } from '../utils/mailer';
 import { JWT_SECRET } from '../config';
+import { forEach } from 'async-foreach';
+import _ from 'lodash';
 
 exports.register = async (req, res) => {
 
   let reqBody = {
     ...req.body,
-    password: bcrypt.hashSync(req.body.password, 10) // Hash password
   }
 
   await Users.create(reqBody, (err, data) => {
     let responseData = {};
-
     if (data) {
       var token = jwt.sign({ id: data._id }, JWT_SECRET);
       sendMailToVerify(token, data.email, data.fullName);
-
       responseData = {
         status: 'T',
         result: data,
         message: 'Create user success !'
       };
     }
-
     if (err) {
       responseData = {
         status: 'F',
@@ -118,10 +116,8 @@ exports.login = (req, res) => {
   }
 }
 
-
 exports.getCurrentUserByToken = (req, res) => {
   const currentUser = req.user;
-
   let responseData = {};
   try {
     responseData = {
@@ -162,23 +158,93 @@ exports.getFriends = (req, res) => {
     });
 }
 
-exports.addFriend = (req, res) => {
-
-  Friends.create(req.body, (err, data) => {
-    let responseData = {};
+exports.addFriend = async (req, res) => {
+  const currentUser = req.user;
+  let responseData = {};
+  try {
+    const to = _.get(req.body, 'to');
+    const params = { from: currentUser._id, to }
+    const data = await FriendRelationships.create(params);
     responseData = {
-      status: 'T',
+      status: true,
       result: data,
-      message: 'Add friend success !'
-    };
-    if (err) {
-      responseData = {
-        status: 'F',
-        code: err,
-        result: [],
-        message: err.message || 'Add friend FAIL !'
-      };
+      message: 'Add friend SUCCESS.'
     }
-    res.json(responseData);
-  })
+  } catch (err) {
+    responseData = {
+      status: false,
+      code: err.code,
+      message: err.message || 'Add friend FAILURE.'
+    }
+  }
+  res.json(responseData);
+}
+
+exports.acceptFriend = async (req, res) => {
+  const currentUser = req.user;
+  let responseData = {};
+  try {
+    const friendRequestId = _.get(req.body, 'friendRequestId');
+    const data = await FriendRelationships.updateOne({ from: friendRequestId, to: currentUser._id }, { accepted: true });
+    responseData = {
+      status: true,
+      result: data,
+      message: 'Add friend SUCCESS.'
+    }
+  } catch (err) {
+    responseData = {
+      status: false,
+      code: err.code,
+      message: err.message || 'Add friend FAILURE.'
+    }
+  }
+  res.json(responseData);
+}
+
+exports.findPeople = async (req, res) => {
+  const currentUser = req.user;
+  const email = req.body.email.trim();
+  const query = new RegExp(email, 'i');
+  let responseData = {};
+
+  try {
+    const people = await Users.find({ email: query }, 'fullName email _id', async (err, data) => {
+      if (!err) {
+        return data;
+      }
+      console.log(err);
+      return [];
+    });
+    for (var i in people) {
+      const relationshipStatus = await FriendRelationships.findOne({ from: people[i]._id, to: currentUser._id }, 'from to accepted', (err, data) => {
+        if (!err) {
+          return data;
+        }
+        console.log(err);
+        return null;
+      });
+      if (!relationshipStatus) {
+        relationshipStatus = await FriendRelationships.findOne({ from: currentUser._id, to: people[i]._id }, 'from to accepted', (err, data) => {
+          if (!err) {
+            return data;
+          }
+          console.log(err);
+          return null;
+        })
+      }
+      people[i] = _.assign({}, people[i]._doc, { relationshipStatus });
+    };
+    responseData = {
+      status: true,
+      result: people,
+      message: 'Fiend people SUCCESS.'
+    }
+  } catch (err) {
+    responseData = {
+      status: false,
+      code: err.code,
+      message: err.message || 'Fiend people FAILURE.'
+    }
+  }
+  res.json(responseData);
 }
