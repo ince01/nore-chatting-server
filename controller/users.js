@@ -3,37 +3,41 @@ import jwt from 'jsonwebtoken';
 import { Users, Friends, FriendRelationships } from '../models';
 import { sendMailToVerify } from '../utils/mailer';
 import { JWT_SECRET } from '../config';
-import { forEach } from 'async-foreach';
+import Joi from '@hapi/joi';
 import _ from 'lodash';
 
 exports.register = async (req, res) => {
-
-  let reqBody = {
-    ...req.body,
-  }
-
-  await Users.create(reqBody, (err, data) => {
-    let responseData = {};
-    if (data) {
-      var token = jwt.sign({ id: data._id }, JWT_SECRET);
-      sendMailToVerify(token, data.email, data.fullName);
-      responseData = {
-        status: 'T',
-        result: data,
-        message: 'Create user success !'
-      };
-    }
-    if (err) {
-      responseData = {
-        status: 'F',
-        code: err,
-        result: [],
-        message: err.message || 'Create user FAIL !'
-      };
-    }
-    res.json(responseData);
+  const params = req.body;
+  const schema = Joi.object().keys({
+    fullName: Joi.string().required(),
+    password: Joi.string().required(),
+    email: Joi.string().email().required(),
+    birthday: Joi.date().iso().required(),
+    gender: Joi.string().required(),
+    avatarUrl: Joi.string().optional()
   })
-}
+  const result = Joi.validate(params, schema);
+  if (!_.isEmpty(result.error)) {
+    throw result.error;
+  }
+  try {
+    let responseData = {};
+    Users.create(result.value, (err, data) => {
+      if (!err) {
+        var token = jwt.sign({ id: data._id }, JWT_SECRET);
+        sendMailToVerify(token, data.email, data.fullName);
+        responseData = {
+          status: true,
+          result: data,
+          message: 'Registed.'
+        };
+      }
+    });
+    res.status(200).json(responseData);
+  } catch (error) {
+    throw error;
+  }
+};
 
 exports.verifyEmail = (req, res) => {
   const token = req.params.token;

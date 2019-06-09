@@ -24,9 +24,8 @@ var userSchema = new Schema({
     required: true,
     trim: true,
   },
-  avatar: {
-    type: SchemaTypes.ObjectId,
-    ref: 'Images',
+  birthday: {
+    type: SchemaTypes.Date,
   },
   avatarUrl: {
     type: String,
@@ -57,18 +56,6 @@ userSchema.pre('save', async function (next) {
   this.password = hash;
   next();
 });
-
-// userSchema.post('save', function (doc, next) {
-//   console.log("doc._id", doc._id)
-//   Friends.create({ idUser: doc._id, idFriend: doc._id }, (data, err) => {
-//     if (err) {
-//       return console.log(err);
-//     } else {
-//       console.log("data", data)
-//     }
-//   });
-//   next();
-// })
 
 var Users = model('Users', userSchema);
 

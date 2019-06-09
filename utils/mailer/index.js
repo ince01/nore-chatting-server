@@ -5,15 +5,7 @@ import { verifyEmail } from './verifyEmail';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendMailToVerify = (token, toEmailAdd, name) => {
-  sgMail.send(verifyEmail(token, toEmailAdd, name), (err, result) => {
-    if (err) {
-      throw err;
-    }
-    else {
-      //Celebrate
-      // console.log(result);
-    }
-  });
+  sgMail.send(verifyEmail(token, toEmailAdd, name));
 }
 
 // const sendMailToResetPass = (toEmailAdd) => {
