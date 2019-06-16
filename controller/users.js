@@ -39,6 +39,41 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.updateUser = async (req, res) => {
+  const currentUser = req.user;
+  const params = req.body;
+
+  const schema = Joi.object().keys({
+    fullName: Joi.string().required(),
+    birthday: Joi.date().iso().required(),
+    gender: Joi.string().required(),
+    avatarUrl: Joi.string().optional()
+  })
+
+  const result = Joi.validate(params, schema);
+  if (!_.isEmpty(result.error)) {
+    throw result.error;
+  }
+
+  let responseData = {};
+
+  await Users.updateOne({ _id: currentUser._id }, result.value, (err, data) => {
+    if (!err) {
+      responseData = {
+        status: true,
+        result: data,
+        message: 'Update user success.'
+      }
+    } else {
+      responseData = {
+        status: false,
+        message: err.message || 'Something went wrong.'
+      }
+    }
+  });
+  res.json(responseData);
+}
+
 exports.verifyEmail = (req, res) => {
   const token = req.params.token;
   const email = req.query.email;
@@ -90,16 +125,30 @@ exports.login = (req, res) => {
         throw err
       }
       if (user) {
-        bcrypt.compare(password, user.password).then((isMatch) => {
+        bcrypt.compare(password, user.password).then(async (isMatch) => {
           if (isMatch) {
-            var token = jwt.sign({ id: user._id }, JWT_SECRET);
 
-            return res.status(200).json({
-              sucess: true,
-              result: user,
-              sessionToken: token,
-              message: "Login success !"
-            })
+            if (user.emailVerified) {
+
+              var token = jwt.sign({ id: user._id }, JWT_SECRET);
+
+              user.friends = await Users.find({
+                '_id': {
+                  $in: user.friends
+                }
+              }, '_id email fullName gender avatarUrl isOnline');
+
+              return res.status(200).json({
+                sucess: true,
+                result: user,
+                sessionToken: token,
+                message: "Login success !"
+              })
+            } else {
+              return res.status(400).send({
+                message: 'Email is not verified.'
+              });
+            }
           } else {
             return res.status(400).send({
               message: 'Invail email or password'
@@ -212,11 +261,10 @@ exports.acceptFriend = async (req, res) => {
 exports.findPeople = async (req, res) => {
   const currentUser = req.user;
   const email = req.body.email.trim();
-  const query = new RegExp(email, 'i');
   let responseData = {};
 
   try {
-    const people = await Users.find({ email: query }, 'fullName email _id', async (err, data) => {
+    const people = await Users.find({ email: email }, 'fullName email _id avatarUrl', async (err, data) => {
       if (!err) {
         return data;
       }
@@ -255,4 +303,24 @@ exports.findPeople = async (req, res) => {
     }
   }
   res.json(responseData);
+}
+
+exports.getListFriendRequest = async (req, res) => {
+  const currentUser = req.user;
+  let responseData = {};
+  await FriendRelationships.find({ to: currentUser._id, accepted: false }).populate({ path: 'from', select: '_id fullName avatarUrl' }).exec((err, data) => {
+    if (!err) {
+      responseData = {
+        status: true,
+        result: data,
+        message: 'Get list friend request success.'
+      }
+    } else {
+      responseData = {
+        status: false,
+        message: err.message || 'Something went wrong.'
+      }
+    }
+    res.json(responseData);
+  });
 }

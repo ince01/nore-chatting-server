@@ -36,11 +36,6 @@ var userSchema = new Schema({
     default: false,
     required: true,
   },
-  isOnline: {
-    type: Boolean,
-    default: false,
-    required: true,
-  },
   friends: [
     {
       type: SchemaTypes.ObjectId,

@@ -4,10 +4,12 @@ import { Users } from './index';
 var friendRelationshipSchema = new Schema({
   from: {
     type: SchemaTypes.ObjectId,
+    ref: 'Users',
     required: true,
   },
   to: {
     type: SchemaTypes.ObjectId,
+    ref: 'Users',
     required: true,
   },
   accepted: {

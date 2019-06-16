@@ -20,30 +20,19 @@ module.exports = (server) => {
   })
 
   io.sockets.on('connection', (socket) => {
-
-    // socket.on('message', (message) => {
-
-    //   console.log(message)
-
-    //   Messages.create(message, (err, data) => {
-    //     if (err) {
-    //       console.log(err);
-    //       return new Error('Something went wrong!');
-    //     };
-    //   });
-
-    //   socket.join(`Room-${message.to}`);
-
-    //   console.log(socket.rooms)
-
-    //   // console.log(io)
-
-    //   io.to(`Room-${message.to}`).emit("newMessage", message.content)
-    //   // socket.on("newMessage", (data) => { console.log(data) })
-
-    // })
-
+    //Join room
     socket.join(socket.roomName);
+
+    socket.on('FRIEND_REQUEST', (data) => {
+      io.to(data.id).emit('NEW_REQUEST', data);
+      console.log('NEW_REQUEST', data)
+    })
+
+    socket.on('FRIEND_ACCECPT', (data) => {
+      console.log('NEW_FRIEND', socket.roomName)
+      io.to(data.id).emit('NEW_FRIEND', data);
+      io.to(socket.roomName).emit('NEW_FRIEND', data);
+    })
 
     socket.on('SEND_MESSAGE', (data) => {
       //Save message
@@ -76,11 +65,13 @@ module.exports = (server) => {
           });
         }
       });
-    })
+    });
+
+
+
     socket.on('disconnect', (reason) => {
       console.log(`${socket.id} disconnected: ${reason}`);
-    })
-
+    });
   })
 }
 

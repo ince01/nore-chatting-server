@@ -11,7 +11,7 @@ const verifyEmail = (token, toEmailAdd, name) => {
       name: name,
       link: link,
       email: toEmailAdd,
-    },
+    }
   }
 }
 

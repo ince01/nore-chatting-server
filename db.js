@@ -7,7 +7,10 @@ module.exports = () => {
   }
   mongoose.connect(MONGODB_URI, options, (error) => {
     if (error) {
-      console.log(`Can't connect database! (Message: ${error.message}`);
+      console.log(`Can't connect database! (Reassion: ${error.message})`);
+    }
+    if (!error) {
+      console.log(`Connected database ...`);
     }
   });
   mongoose.set('useCreateIndex', true);
