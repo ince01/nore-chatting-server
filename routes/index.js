@@ -11,7 +11,7 @@ const upload = multer({
 })
 
 
-import { register, login, getCurrentUserByToken, getFriends, addFriend, verifyEmail, findPeople, acceptFriend } from '../controller/users';
+import { register, login, getCurrentUserByToken, getFriends, addFriend, verifyEmail, findPeople, acceptFriend, getInfoUserById } from '../controller/users';
 import { uploadImage } from '../controller/upload';
 
 router.route('/register')
