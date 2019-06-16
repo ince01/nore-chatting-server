@@ -11,8 +11,9 @@ const upload = multer({
 })
 
 
-import { register, login, getCurrentUserByToken, getFriends, addFriend, verifyEmail, findPeople, acceptFriend, getInfoUserById } from '../controller/users';
+import { register, login, getCurrentUserByToken, getFriends, addFriend, verifyEmail, findPeople, acceptFriend } from '../controller/users';
 import { uploadImage } from '../controller/upload';
+import { getListMessById } from '../controller/messages';
 
 router.route('/register')
   .post(register)
@@ -46,6 +47,11 @@ router.route('/user/acceptFriend')
 router.route('/upload')
   .all(upload.single('file'))
   .post(uploadImage)
+
+router.route('/messages')
+  .all(passport.authenticate('jwt'))
+  .post(getListMessById)
+
 
 module.exports = router;
 

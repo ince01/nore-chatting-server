@@ -1,7 +1,7 @@
 import socketIo from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
-import { Messages } from '../models';
+import { Messages, Users } from '../models';
 
 module.exports = (server) => {
   const io = socketIo.listen(server, { httpCompression: true });
@@ -14,14 +14,12 @@ module.exports = (server) => {
         return next(new Error(err));
       }
 
-      socket.rom = decoded.id;
+      socket.roomName = decoded.id;
       next();
     });
   })
 
   io.sockets.on('connection', (socket) => {
-
-    console.log(socket.rom)
 
     // socket.on('message', (message) => {
 
@@ -45,29 +43,42 @@ module.exports = (server) => {
 
     // })
 
-    socket.join(socket.rom, () => {
-      // console.log(Object.keys(socket.rooms)); // [ <socket.id>, 'room 237' ]
-      // io.to(rooms).emit('a new user has joined the room');
-    });
-    socket.on('SEND_MESSAGE', function (data) {
-      console.log(data);
-      io.to(socket.rom).emit('MESS', {
+    socket.join(socket.roomName);
+
+    socket.on('SEND_MESSAGE', (data) => {
+      //Save message
+      const messObject = {
+        idUser: socket.roomName,
+        idUserChatting: data.id,
         type: 1,
-        mess: data.mess,
-        id: data.id
-      });
-      io.to(data.id).emit('MESS',
-        {
-          type: 0,
-          mess: data.mess,
-          id: socket.rom
+        content: data.mess
+      }
+      const messObject1 = {
+        idUser: data.id,
+        idUserChatting: socket.roomName,
+        type: 0,
+        content: data.mess
+      }
+      Messages.insertMany([messObject, messObject1], (err) => {
+        if (err)
+          throw err;
+        else {
+          //Emit data
+          io.to(socket.roomName).emit('MESS', {
+            type: 1,
+            mess: data.mess,
+            id: data.id
+          });
+          io.to(data.id).emit('MESS', {
+            type: 0,
+            mess: data.mess,
+            id: socket.roomName
+          });
         }
-      );
+      });
     })
-
-
     socket.on('disconnect', (reason) => {
-      // console.log(`${socket.id} disconnected: ${reason}`);
+      console.log(`${socket.id} disconnected: ${reason}`);
     })
 
   })
