@@ -120,23 +120,27 @@ exports.login = (req, res) => {
   }
 }
 
-exports.getCurrentUserByToken = (req, res) => {
+exports.getCurrentUserByToken = async (req, res) => {
   const currentUser = req.user;
-  let responseData = {};
   try {
-    responseData = {
-      status: true,
-      result: currentUser,
-      message: 'Get current user success.',
-    }
-    res.status(200).json(responseData)
+    currentUser.friends = await Users.find({
+      '_id': {
+        $in: currentUser.friends
+      }
+    }, '_id email fullName gender avatarUrl isOnline');
+    res.status(200).json(
+      {
+        status: true,
+        result: currentUser,
+        message: 'Get current user success.',
+      }
+    )
   } catch (err) {
     throw err
   }
 }
 
 exports.getFriends = (req, res) => {
-
   Friends.find({ idUser: req.user._id })
     .populate('idFriend')
     .exec((err, friend) => {
